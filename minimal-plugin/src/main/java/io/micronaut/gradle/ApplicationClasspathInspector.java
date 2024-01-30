@@ -18,14 +18,8 @@ package io.micronaut.gradle;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.tasks.CacheableTask;
-import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.Internal;
-import org.gradle.api.tasks.OutputFile;
-import org.gradle.api.tasks.PathSensitive;
-import org.gradle.api.tasks.PathSensitivity;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.*;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,17 +28,18 @@ import java.io.PrintWriter;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CacheableTask
+@DisableCachingByDefault(because = "Not worth caching")
+@UntrackedTask(because = "Not worth calculating fingerprints")
 public abstract class ApplicationClasspathInspector extends DefaultTask {
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     public abstract ConfigurableFileCollection getResources();
 
-    @Internal
+    @InputFiles
+    @PathSensitive(PathSensitivity.NAME_ONLY)
     public abstract ConfigurableFileCollection getRuntimeClasspath();
 
-    @Input
-    public Set<String> getResolvedClasspathNames() {
+    private Set<String> getResolvedClasspathNames() {
         return getRuntimeClasspath().getFiles().stream().map(File::getName).collect(Collectors.toSet());
     }
 
